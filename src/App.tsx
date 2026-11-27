@@ -24,6 +24,7 @@ import {
 import { stages, totalChapters, type Chapter } from './data/curriculum';
 import { chapterChallenges, defaultChallenge } from './data/lessons';
 import ChessBoard from './components/ChessBoard';
+import Arena from './components/Arena';
 
 type Page =
   | 'Dashboard'
@@ -59,7 +60,6 @@ export default function App() {
   const [selected, setSelected] = useState<Chapter | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
 
-  // Interactive chapter play state
   const [playing, setPlaying] = useState(false);
   const [stepIndex, setStepIndex] = useState(0);
   const [resetCount, setResetCount] = useState(0);
@@ -195,7 +195,7 @@ export default function App() {
               Explore academy <ChevronRight size={14} />
             </button>
           </div>
-          <small className="version">CHESS LEGENDS · V0.2</small>
+          <small className="version">CHESS LEGENDS · V0.3</small>
         </div>
       </aside>
 
@@ -429,13 +429,14 @@ export default function App() {
           </div>
         )}
 
-        {page !== 'Dashboard' && page !== 'Chess School' && (
+        {page === 'Online Arena' && <Arena />}
+
+        {page !== 'Dashboard' && page !== 'Chess School' && page !== 'Online Arena' && (
           <div className="content placeholder">
             <div className="eyebrow">UPCOMING MODULE</div>
             <h1>{page}</h1>
             <p className="muted">
-              This module is scheduled for the next development phase once the interactive board and
-              chess.js engine are wired in.
+              This module is scheduled for the next development phase.
             </p>
             <div className="roadmap-box">
               <b>Development roadmap</b>
@@ -443,13 +444,13 @@ export default function App() {
                 <CheckCircle2 size={16} /> Academy interface & 12-stage curriculum
               </div>
               <div>
-                <CheckCircle2 size={16} /> Interactive chessboard & puzzle validation (chess.js)
+                <CheckCircle2 size={16} /> Interactive chessboard & Stage 1 lessons
               </div>
               <div>
-                <Clock3 size={16} /> Stockfish engine & move analysis
+                <CheckCircle2 size={16} /> Play vs AI mode in Online Arena
               </div>
               <div>
-                <Clock3 size={16} /> Online arena & adaptive AI coach
+                <Clock3 size={16} /> Puzzle World & adaptive AI coach
               </div>
             </div>
             <button className="primary" onClick={() => navigate('Chess School')}>

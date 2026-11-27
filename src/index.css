@@ -230,3 +230,107 @@ h1 em { color: #d6b76d; }
   .chapter-grid { grid-template-columns: 1fr; }
   .continue-art { display: none; }
 }
+.chessboard-wrap {
+  margin: 16px 0;
+}
+
+.chessboard {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  width: 100%;
+  max-width: 400px;
+  aspect-ratio: 1;
+  margin: 0 auto;
+  border: 2px solid #35443a;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.square {
+  position: relative;
+  border: 0;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  aspect-ratio: 1;
+}
+
+.square.light { background: #dce5df; }
+.square.dark { background: #3b5949; }
+.square.selected { background: #d5b66d; }
+
+.piece {
+  font-size: clamp(22px, 5vw, 34px);
+  line-height: 1;
+  user-select: none;
+}
+.white-piece { color: #ffffff; text-shadow: 0 1px 3px #000a; }
+.black-piece { color: #111815; text-shadow: 0 1px 2px #fff5; }
+
+.coord {
+  position: absolute;
+  font-size: 9px;
+  font-weight: 700;
+  opacity: 0.65;
+  pointer-events: none;
+}
+.square.light .coord { color: #2b4236; }
+.square.dark .coord { color: #dce5df; }
+.coord.rank { top: 2px; left: 3px; }
+.coord.file { bottom: 2px; right: 3px; }
+
+.legal-dot {
+  position: absolute;
+  width: 28%;
+  height: 28%;
+  border-radius: 50%;
+  background: #0b111066;
+}
+.legal-dot.capture {
+  width: 82%;
+  height: 82%;
+  background: transparent;
+  border: 3px solid #d5b66d;
+}
+
+.board-status {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  max-width: 400px;
+  margin: 8px auto 0;
+  font-size: 11px;
+  color: #85938c;
+}
+.badge-alert {
+  background: #392f1c;
+  color: #e6c879;
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-weight: 700;
+}
+.modal {
+  max-height: 92vh;
+  overflow-y: auto;
+}
+
+.challenge-box {
+  background: #1a2620;
+  border: 1px solid #2a3830;
+  border-radius: 10px;
+  padding: 12px;
+  margin: 12px 0;
+}
+.challenge-box b { font-size: 12px; color: #e6c879; display: block; margin-bottom: 4px; }
+.challenge-box p { font-size: 11px; color: #dce5df; margin: 0; }
+
+.feedback-bar {
+  background: #25352a;
+  border: 1px solid #d5b66d;
+  color: #e6c879;
+  font-size: 11px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  margin: 12px 0;
+  text-align: center;
+}

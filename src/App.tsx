@@ -22,6 +22,8 @@ import {
   Sparkles,
 } from 'lucide-react';
 import { stages, totalChapters, type Chapter } from './data/curriculum';
+import { chapterChallenges, defaultChallenge } from './data/lessons';
+import ChessBoard from './components/ChessBoard';
 
 type Page =
   | 'Dashboard'
@@ -57,6 +59,12 @@ export default function App() {
   const [selected, setSelected] = useState<Chapter | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
 
+  // Interactive chapter play state
+  const [playing, setPlaying] = useState(false);
+  const [stepIndex, setStepIndex] = useState(0);
+  const [resetCount, setResetCount] = useState(0);
+  const [feedback, setFeedback] = useState<string | null>(null);
+
   const [progress, setProgress] = useState<ProgressState>(() => {
     try {
       const saved = localStorage.getItem('chess-legends-progress');
@@ -68,6 +76,42 @@ export default function App() {
 
   const completedSet = useMemo(() => new Set(progress.completed), [progress.completed]);
   const isUnlocked = (id: number) => id === 1 || completedSet.has(id - 1);
+
+  const activeChallenges = selected
+    ? chapterChallenges[selected.id] ?? defaultChallenge
+    : [];
+  const currentChallenge = activeChallenges[stepIndex];
+
+  const openChapter = (chapter: Chapter) => {
+    setSelected(chapter);
+    setPlaying(false);
+    setStepIndex(0);
+    setResetCount(0);
+    setFeedback(null);
+  };
+
+  const handleMove = (move: { from: string; to: string }) => {
+    if (!currentChallenge) return;
+    const played = `${move.from}${move.to}`;
+
+    if (played === currentChallenge.expectedMove) {
+      if (stepIndex + 1 < activeChallenges.length) {
+        setFeedback('Correct! Loading next challenge...');
+        setTimeout(() => {
+          setStepIndex((i) => i + 1);
+          setResetCount(0);
+          setFeedback(null);
+        }, 900);
+      } else {
+        setFeedback('Chapter mastered! Click "Complete & Claim XP" below.');
+      }
+    } else {
+      setFeedback(`Not quite. Hint: ${currentChallenge.hint}`);
+      setTimeout(() => {
+        setResetCount((c) => c + 1);
+      }, 900);
+    }
+  };
 
   const completeChapter = (chapter: Chapter) => {
     if (completedSet.has(chapter.id)) return;
@@ -151,7 +195,7 @@ export default function App() {
               Explore academy <ChevronRight size={14} />
             </button>
           </div>
-          <small className="version">CHESS LEGENDS · V0.1</small>
+          <small className="version">CHESS LEGENDS · V0.2</small>
         </div>
       </aside>
 
@@ -248,7 +292,7 @@ export default function App() {
                 <small>CHAPTER {String(currentChapter.id).padStart(3, '0')}</small>
                 <h3>{currentChapter.title}</h3>
                 <p>Start with a focused lesson and practice what you learn.</p>
-                <button className="primary" onClick={() => setSelected(currentChapter)}>
+                <button className="primary" onClick={() => openChapter(currentChapter)}>
                   <Play size={16} fill="currentColor" /> Continue chapter
                 </button>
               </div>
@@ -353,7 +397,7 @@ export default function App() {
                             className={`chapter-card ${!unlocked && !done ? 'locked' : ''} ${
                               done ? 'complete' : ''
                             }`}
-                            onClick={() => (unlocked || done ? setSelected(c) : null)}
+                            onClick={() => (unlocked || done ? openChapter(c) : null)}
                           >
                             <div className="chapter-top">
                               <span>CH. {String(c.id).padStart(3, '0')}</span>
@@ -399,7 +443,7 @@ export default function App() {
                 <CheckCircle2 size={16} /> Academy interface & 12-stage curriculum
               </div>
               <div>
-                <Clock3 size={16} /> Interactive chessboard & puzzle validation (chess.js)
+                <CheckCircle2 size={16} /> Interactive chessboard & puzzle validation (chess.js)
               </div>
               <div>
                 <Clock3 size={16} /> Stockfish engine & move analysis
@@ -425,67 +469,58 @@ export default function App() {
               CHAPTER {String(selected.id).padStart(3, '0')} · {selected.difficulty}
             </div>
             <h2>{selected.title}</h2>
-            <p className="muted">
-              Master this concept through guided lessons, practice positions, and a final mastery
-              exam.
-            </p>
-            <div className="modal-stats">
-              <div>
-                <BookOpen />
-                <strong>{selected.lessonCount} lessons</strong>
-              </div>
-              <div>
-                <Target />
-                <strong>{selected.challengeCount} challenges</strong>
-              </div>
-              <div>
-                <Zap />
-                <strong>{selected.xp} XP</strong>
-              </div>
-            </div>
-            <div className="lesson-list">
-              <div>
-                <span className="lesson-num">01</span>
-                <div>
-                  <b>Understand the concept</b>
-                  <small>Animated board explanation and key ideas</small>
+
+            {!playing ? (
+              <>
+                <p className="muted">
+                  Master this concept through interactive board challenges.
+                </p>
+                <div className="modal-stats">
+                  <div>
+                    <BookOpen />
+                    <strong>{activeChallenges.length} tasks</strong>
+                  </div>
+                  <div>
+                    <Target />
+                    <strong>Interactive</strong>
+                  </div>
+                  <div>
+                    <Zap />
+                    <strong>{selected.xp} XP</strong>
+                  </div>
                 </div>
-                <Play size={16} />
-              </div>
-              <div>
-                <span className="lesson-num">02</span>
-                <div>
-                  <b>Guided practice</b>
-                  <small>Solve positions with visual hints</small>
+                <button className="primary full" onClick={() => setPlaying(true)}>
+                  <Play size={16} fill="currentColor" /> Start Chapter
+                </button>
+              </>
+            ) : (
+              <>
+                <div className="challenge-box">
+                  <b>
+                    Task {stepIndex + 1}/{activeChallenges.length}: {currentChallenge.title}
+                  </b>
+                  <p>{currentChallenge.instruction}</p>
                 </div>
-                <Play size={16} />
-              </div>
-              <div>
-                <span className="lesson-num">03</span>
-                <div>
-                  <b>Challenge round</b>
-                  <small>Apply the skill independently</small>
-                </div>
-                <Play size={16} />
-              </div>
-              <div>
-                <span className="lesson-num">04</span>
-                <div>
-                  <b>Mastery exam</b>
-                  <small>Score 85%+ to unlock the next chapter</small>
-                </div>
-                <Trophy size={16} />
-              </div>
-            </div>
-            <button
-              className="primary full"
-              onClick={() => completeChapter(selected)}
-              disabled={completedSet.has(selected.id)}
-            >
-              <CheckCircle2 size={17} />
-              {completedSet.has(selected.id) ? 'Chapter Completed' : 'Mark chapter complete'}
-              <span>+{selected.xp} XP</span>
-            </button>
+
+                <ChessBoard
+                  key={`${selected.id}-${stepIndex}-${resetCount}`}
+                  fen={currentChallenge.fen}
+                  onMove={handleMove}
+                />
+
+                {feedback && <div className="feedback-bar">{feedback}</div>}
+
+                <button
+                  className="primary full"
+                  onClick={() => completeChapter(selected)}
+                  disabled={completedSet.has(selected.id)}
+                >
+                  <CheckCircle2 size={17} />
+                  {completedSet.has(selected.id) ? 'Chapter Completed' : 'Complete & Claim XP'}
+                  <span>+{selected.xp} XP</span>
+                </button>
+              </>
+            )}
           </div>
         </div>
       )}
